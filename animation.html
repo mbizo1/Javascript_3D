@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Animation</title>
+    <script src="../libs/three.js"></script>
+    <script src="../libs/stats.min.js"></script>
+    <script src="../libs/dat.gui.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <title></title>
+</head>
+<body>
+    <script>
+
+        //global variables
+        var renderer;
+        var scene;
+        var camera;
+        var stats;  //variable for frame rate the browser can render
+        var control; //for objects with properties that we want to control(eg. cube size, rotation speed)
+
+        function init()
+        {
+            //creating scene container for all objects.
+            scene = new THREE.Scene;
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            // create a render, sets the background color and the size
+            renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(0x1f0000, 1.3);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            //create a cube and add to scene
+            var cubeGeometry = new THREE.BoxGeometry(
+                10 * Math.random(),
+                10 * Math.random(),
+                10 * Math.random());
+
+            var cubeMaterial = new THREE.MeshNormalMaterial();
+
+            cubeMaterial.transparent = true;
+            var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+            cube.name = 'cube'; //need to name cube that will be called in render
+            scene.add(cube);
+
+            //position and point the camera to the center
+            camera.position.x = 15;
+            camera.position.y = 16;
+            camera.position.z = 13;
+            camera.lookAt(scene.position);
+
+            //add the output of the renderer to the html element
+            document.body.appendChild(renderer.domElement);
+
+            
+            //call stats function and add stats object to the HTML document
+            stats = createStats();
+            document.body.appendChild(stats.domElement);
+
+            //function to control rotation speed and size of the cube
+            control = new function () {
+                this.rotationSpeed = 0.005;
+                this.scale = 1;
+            };
+            addControls(control);
+
+
+            //call stats function and add stats object to the HTML document
+            stats = createStats();
+            document.body.appendChild(stats.domElement);
+
+            render();
+        }
+
+        //create a stats object and position it, in this case top left of the screen
+        function createStats()
+        {
+            var stats = new Stats();
+            stats.setMode(0); //0 for frames rendered in last sec, 1 for ms needed
+
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.left = '0';
+            stats.domElement.style.top = '0';
+
+            return stats;
+        }
+
+        //func for UI controls 
+        function addControls(controlObject) {
+            var gui = new dat.GUI();
+            gui.add(controlObject, 'rotationSpeed', -0.1, 0.1);
+            gui.add(controlObject, 'scale', 0.01, 2);
+        }
+
+        //call init function
+        function render()
+        {
+            //for animation, we pass "render" as an argument 
+            //to request a frame for animation.
+            renderer.render(scene, camera);
+
+            //sets the speed at which our cube object will rotate at
+            scene.getObjectByName('cube').rotation.x += control.rotationSpeed;
+
+            scene.getObjectByName('cube').scale.set(control.scale, control.scale, control.scale);
+
+            requestAnimationFrame(render);
+
+            //update the stats function everytime render func is called
+            stats.update();
+        }
+
+        //load init function once page has completely loaded in the browser
+        window.onload = init;
+
+    </script>
+
+        
+</body>
+</html>
